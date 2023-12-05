@@ -32,10 +32,10 @@ app.use(
     origin: [
       "http://localhost:3005",
       "http://localhost:3000",
-      "https://mesto.n1ght.nomoredomainsmonster.ru",
-      "http://mesto.n1ght.nomoredomainsmonster.ru",
-      "https://api.mesto.n1ght.nomoredomainsmonster.ru",
-      "http://api.mesto.n1ght.nomoredomainsmonster.ru",
+      "https://movies.n1ght.nomoredomainsmonster.ru",
+      "http://movies.n1ght.nomoredomainsmonster.ru",
+      "https://api.movies.n1ght.nomoredomainsmonster.ru",
+      "http://api.movies.n1ght.nomoredomainsmonster.ru",
     ],
     credentials: true,
   })
