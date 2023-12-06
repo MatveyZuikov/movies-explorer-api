@@ -1,19 +1,18 @@
-const router = require("express").Router();
-const LinkPattern = require("../utils/avatarPattern");
-const { celebrate, Joi } = require("celebrate");
+const router = require('express').Router();
+const { celebrate, Joi } = require('celebrate');
 
-const { updateUserById, getMyInfo } = require("../controllers/users");
+const { updateUserById, getMyInfo } = require('../controllers/users');
 
-router.get("/users/me", getMyInfo);
+router.get('/users/me', getMyInfo);
 router.patch(
-  "/users/me",
+  '/users/me',
   celebrate({
     body: Joi.object().keys({
       name: Joi.string().required().min(2).max(30),
       email: Joi.string().required().email(),
     }),
   }),
-  updateUserById
+  updateUserById,
 );
 
 module.exports = router;

@@ -1,15 +1,16 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const UserModel = require("../models/user");
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const UserModel = require('../models/user');
+
 const { NODE_ENV, JWT_SECRET } = process.env;
 
-const ValidationError = require("../errors/ValidationError");
-const ConflictError = require("../errors/ConflictError");
-const NotFoundError = require("../errors/NotFoundError");
+const ValidationError = require('../errors/ValidationError');
+const ConflictError = require('../errors/ConflictError');
+const NotFoundError = require('../errors/NotFoundError');
 
 const saltRounds = 10;
 let secureValue;
-if (NODE_ENV === "production") {
+if (NODE_ENV === 'production') {
   secureValue = true;
 } else {
   secureValue = false;
@@ -22,19 +23,19 @@ const createUser = (req, res, next) => {
     .hash(password, saltRounds)
     .then((hash) => {
       UserModel.create({ name, email, password: hash })
-        .then((user) => {
-          return res.status(201).send({ name, email });
-        })
+        .then(
+          res.status(201).send({ name, email }),
+        )
         .catch((err) => {
           if (err.code === 11000) {
             return next(
-              new ConflictError("Пользователь с таким email уже существует")
+              new ConflictError('Пользователь с таким email уже существует'),
             );
           }
-          if (err.name === "ValidationError") {
-            return next(new ValidationError("Некорректные данные"));
+          if (err.name === 'ValidationError') {
+            return next(new ValidationError('Некорректные данные'));
           }
-          next(err);
+          return next(err);
         });
     })
     .catch(next);
@@ -47,31 +48,31 @@ const login = (req, res, next) => {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === "production" ? JWT_SECRET : "dev-secret",
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
         {
-          expiresIn: "7d",
-        }
+          expiresIn: '7d',
+        },
       );
       res
-        .cookie("jwt", token, {
+        .cookie('jwt', token, {
           maxAge: 3600000,
           httpOnly: true,
-          sameSite: "none",
+          sameSite: 'none',
           secure: secureValue,
         })
-        .send({message: "Вы успешно авторизовались"});
+        .send({ message: 'Вы успешно авторизовались' });
     })
     .catch(next);
 };
 
 const logout = (req, res) => {
   res
-    .clearCookie("jwt", {
+    .clearCookie('jwt', {
       httpOnly: true,
-      sameSite: "none",
+      sameSite: 'none',
       secure: secureValue,
     })
-    .send({ message: "Вы успешно вышли" });
+    .send({ message: 'Вы успешно вышли' });
 };
 
 const getMyInfo = (req, res, next) => {
@@ -80,7 +81,7 @@ const getMyInfo = (req, res, next) => {
   UserModel.findById(owner)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError("Переданы некорректные данные");
+        throw new NotFoundError('Переданы некорректные данные');
       }
       res.status(200).send({ name: user.name, email: user.email });
     })
@@ -97,13 +98,18 @@ const updateUserById = (req, res, next) => {
   })
     .then((user) => {
       if (!user) {
-        return next(new NotFoundError("Пользователь не найден."));
+        return next(new NotFoundError('Пользователь не найден.'));
       }
-      res.send({ name: user.name, email: user.email });
+      return res.send({ name: user.name, email: user.email });
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return next(new ValidationError("Некорректные данные"));
+      if (err.code === 11000) {
+        return next(
+          new ConflictError('Пользователь с таким email уже существует'),
+        );
+      }
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError('Некорректные данные'));
       }
       return next(err);
     });

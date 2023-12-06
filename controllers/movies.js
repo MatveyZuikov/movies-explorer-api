@@ -1,17 +1,14 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const MovieModel = require("../models/movie");
-const { NODE_ENV, JWT_SECRET } = process.env;
+const MovieModel = require('../models/movie');
 
-const ValidationError = require("../errors/ValidationError");
-const AuthForbiddenError = require("../errors/AuthForbiddenError");
-const NotFoundError = require("../errors/NotFoundError");
-const CastError = require("../errors/CastError");
+const ValidationError = require('../errors/ValidationError');
+const AuthForbiddenError = require('../errors/AuthForbiddenError');
+const NotFoundError = require('../errors/NotFoundError');
+const CastError = require('../errors/CastError');
 
 const getMovies = (req, res, next) => {
-  const owner = req.user._id;
+  const ownerId = req.user._id;
 
-  MovieModel.find({ owner: owner })
+  MovieModel.find({ owner: ownerId })
     .then((cards) => {
       res.status(200).send(cards);
     })
@@ -28,7 +25,6 @@ const createMovie = (req, res, next) => {
     image,
     trailerLink,
     thumbnail,
-    owner,
     movieId,
     nameRU,
     nameEN,
@@ -53,8 +49,8 @@ const createMovie = (req, res, next) => {
       res.status(201).send(data);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return next(new ValidationError("Некорректные данные"));
+      if (err.name === 'ValidationError') {
+        return next(new ValidationError('Некорректные данные'));
       }
       return next(err);
     });
@@ -64,27 +60,27 @@ const deleteMovie = (req, res, next) => {
   const { id } = req.params;
   const deleteThisCard = () => {
     MovieModel.findByIdAndRemove(id)
-      .then((movie) => res.send({ message: "Фильм удален" }))
+      .then(() => res.send({ message: 'Фильм удален' }))
       .catch(next);
   };
 
   MovieModel.findById(id)
     .then((movie) => {
       if (!movie) {
-        throw new NotFoundError("Фильм не найден");
+        throw new NotFoundError('Фильм не найден');
       }
 
       if (movie.owner.toString() !== req.user._id) {
         throw new AuthForbiddenError(
-          "Нельзя удалить фильм другого пользователя"
+          'Нельзя удалить фильм другого пользователя',
         );
       }
 
       return deleteThisCard();
     })
     .catch((err) => {
-      if (err.name === "CastError") {
-        return next(new CastError("Переданы некорректные данные"));
+      if (err.name === 'CastError') {
+        return next(new CastError('Переданы некорректные данные'));
       }
       return next(err);
     });
